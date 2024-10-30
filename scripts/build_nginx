@@ -3,7 +3,7 @@
 # This script is designed to run in a Heroku Stack Docker
 # image. More information on the Heroku Stack can be found
 # at https://devcenter.heroku.com/articles/stack
-set -e
+
 NGINX_VERSION=${NGINX_VERSION-1.25.1}
 PCRE_VERSION=${PCRE_VERSION-8.45}
 HEADERS_MORE_VERSION=${HEADERS_MORE_VERSION-0.34}
@@ -15,7 +15,6 @@ pcre_tarball_url=https://ftp.exim.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz
 headers_more_nginx_module_url=https://github.com/openresty/headers-more-nginx-module/archive/v${HEADERS_MORE_VERSION}.tar.gz
 uuid4_url=https://github.com/cybozu/nginx-uuid4-module/archive/${UUID4_VERSION}.tar.gz
 zlib_url=http://zlib.net/zlib-${ZLIB_VERSION}.tar.gz
-datadog_url=https://github.com/DataDog/nginx-datadog/archive/refs/tags/installer-0.1.2.tar.gz
 
 temp_dir=$(mktemp -d /tmp/nginx.XXXXXXXXXX)
 
@@ -26,19 +25,16 @@ echo "Downloading $nginx_tarball_url"
 curl -L $nginx_tarball_url | tar xzv
 
 echo "Downloading $pcre_tarball_url"
-(cd nginx-${NGINX_VERSION} && curl -L $pcre_tarball_url | tar xvz)
+(cd nginx-${NGINX_VERSION} && curl -L $pcre_tarball_url | tar xvz )
 
 echo "Downloading $headers_more_nginx_module_url"
-(cd nginx-${NGINX_VERSION} && curl -L $headers_more_nginx_module_url | tar xvz)
+(cd nginx-${NGINX_VERSION} && curl -L $headers_more_nginx_module_url | tar xvz )
 
 echo "Downloading $zlib_url"
-(cd nginx-${NGINX_VERSION} && curl -L $zlib_url | tar xvz)
+(cd nginx-${NGINX_VERSION} && curl -L $zlib_url | tar xvz )
 
 echo "Downloading $uuid4_url"
-(cd nginx-${NGINX_VERSION} && curl -L $uuid4_url | tar xvz)
-
-echo "Downloading $datadog_url"
-(cd nginx-${NGINX_VERSION} && curl -L $datadog_url | tar xvz)
+(cd nginx-${NGINX_VERSION} && curl -L $uuid4_url | tar xvz )
 
 # This will build `nginx`
 (
@@ -52,8 +48,7 @@ echo "Downloading $datadog_url"
     --with-http_sub_module \
     --prefix=/tmp/nginx \
     --add-module=${temp_dir}/nginx-${NGINX_VERSION}/headers-more-nginx-module-${HEADERS_MORE_VERSION} \
-    --add-module=${temp_dir}/nginx-${NGINX_VERSION}/nginx-uuid4-module-${UUID4_VERSION} \
-    --add-dynamic-module=${temp_dir}/nginx-${NGINX_VERSION}/nginx-datadog-installer-0.1.2/module
+    --add-module=${temp_dir}/nginx-${NGINX_VERSION}/nginx-uuid4-module-${UUID4_VERSION}
   make install
 )
 
@@ -70,15 +65,12 @@ echo "Downloading $datadog_url"
     --with-http_sub_module \
     --prefix=/tmp/nginx-debug \
     --add-module=${temp_dir}/nginx-${NGINX_VERSION}/headers-more-nginx-module-${HEADERS_MORE_VERSION} \
-    --add-module=${temp_dir}/nginx-${NGINX_VERSION}/nginx-uuid4-module-${UUID4_VERSION} \
-    --add-dynamic-module=${temp_dir}/nginx-${NGINX_VERSION}/nginx-datadog-installer-0.1.2/module
+    --add-module=${temp_dir}/nginx-${NGINX_VERSION}/nginx-uuid4-module-${UUID4_VERSION}
   make install
 )
 
 release_dir=$(mktemp -d /tmp/nginx.XXXXXXXXXX)
 
-mkdir -p $release_dir/modules
-cp /tmp/nginx/modules/ngx_http_datadog_module.so $release_dir/modules
 cp /tmp/nginx/sbin/nginx $release_dir/nginx
 cp /tmp/nginx-debug/sbin/nginx $release_dir/nginx-debug
 cp /tmp/nginx/conf/mime.types $release_dir/mime.types
