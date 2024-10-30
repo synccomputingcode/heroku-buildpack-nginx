@@ -3,6 +3,7 @@
 # This script is designed to run in a Heroku Stack Docker
 # image. More information on the Heroku Stack can be found
 # at https://devcenter.heroku.com/articles/stack
+set -e
 NGINX_VERSION=${NGINX_VERSION-1.25.1}
 PCRE_VERSION=${PCRE_VERSION-8.45}
 HEADERS_MORE_VERSION=${HEADERS_MORE_VERSION-0.34}
@@ -76,6 +77,8 @@ echo "Downloading $datadog_url"
 
 release_dir=$(mktemp -d /tmp/nginx.XXXXXXXXXX)
 
+mkdir -p $release_dir/modules
+cp /tmp/nginx/modules/ngx_http_datadog_module.so $release_dir/modules
 cp /tmp/nginx/sbin/nginx $release_dir/nginx
 cp /tmp/nginx-debug/sbin/nginx $release_dir/nginx-debug
 cp /tmp/nginx/conf/mime.types $release_dir/mime.types
